@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import './RegisterPage.css';
+import {urlConfig} from '../../config';
+import { useAppContext } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 function RegisterPage() {
 
@@ -9,9 +12,46 @@ function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    //Do these tasks inside the RegisterPage function, after the useStates definition
+    //Task 4: Include a state for error message.
+    const [showerr, setShowerr] = useState('');
+    //Task 5: Create a local variable for `navigate`   and `setIsLoggedIn`.
+    const navigate = useNavigate();
+    const { setIsLoggedIn } = useAppContext;
+
     // insert code here to create handleRegister function and include console.log
     const handleRegister = async () => {
         console.log("Register invoked")
+        try {
+            const response = await fetch (`${urlConfig.backendUrl}/api/auth/register`, {
+                method: 'POST';
+                headers: {
+                    'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    password: password
+                }),
+                const json = await response.json();
+                if (json.authtoken) {
+                    sessionStorage.setItem('auth-token', json.authtoken);
+                    sessionStorage.setItem('name', firstName);
+                    sessionStorage.setItem('email', json.email);
+                    //insert code for setting logged in state
+                    //insert code for navigating to MainPAge
+                },
+                setIsLoggedIn(true);
+                navigate('/app');
+                if (json.error) {
+                    setShowerr(json.error);
+                },
+                <div className="text-danger">{showerr}</div>
+            });
+        } catch (error) {
+            console.log("Error fetching details: " + error.message);
+        }
     }
 
          return (
