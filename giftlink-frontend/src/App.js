@@ -1,4 +1,5 @@
 import React from 'react';
+import Profile from './components/Profile/Profile';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import MainPage from './components/MainPage/MainPage';
 import LoginPage from './components/LoginPage/LoginPage';
@@ -22,6 +23,7 @@ function App() {
           <Route path="/app/register" element={<RegisterPage />} />
           <Route path="/app/details" element={<DetailsPage />} />
           <Route path="/app/search" element={<SearchPage />} />
+          <Route path="/app/profile" element={<Profile/>} />
         </Routes>
         </>
   );
