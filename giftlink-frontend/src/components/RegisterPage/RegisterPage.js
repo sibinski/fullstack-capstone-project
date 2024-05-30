@@ -24,7 +24,7 @@ function RegisterPage() {
         console.log("Register invoked")
         try {
             const response = await fetch (`${urlConfig.backendUrl}/api/auth/register`, {
-                method: 'POST';
+                method: 'POST',
                 headers: {
                     'content-type': 'application/json',
                 },
@@ -33,7 +33,8 @@ function RegisterPage() {
                     lastName: lastName,
                     email: email,
                     password: password
-                }),
+                })
+                });
                 const json = await response.json();
                 if (json.authtoken) {
                     sessionStorage.setItem('auth-token', json.authtoken);
@@ -41,14 +42,14 @@ function RegisterPage() {
                     sessionStorage.setItem('email', json.email);
                     //insert code for setting logged in state
                     //insert code for navigating to MainPAge
-                },
                 setIsLoggedIn(true);
                 navigate('/app');
+                }
                 if (json.error) {
                     setShowerr(json.error);
-                },
-            });
-        } catch (error) {
+                }
+            }
+          catch (error) {
             console.log("Error fetching details: " + error.message);
         }
     }
