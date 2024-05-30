@@ -41,8 +41,7 @@ function LoginPage() {
                 
                 const json = await res.json();
                 console.log('Json',json);
-                if (json.authtoken) 
-                try 
+                if (json.authtoken)  
                 {
                 sessionStorage.setItem('auth-token', json.authtoken);
                 sessionStorage.setItem('name', json.userName);
@@ -59,8 +58,10 @@ function LoginPage() {
                     setIncorrect("");
                   }, 2000);
                 }
+            catch (error) {
+                console.log("Error: " + error.message);
             }
-
+            }
         return (
     <div className="container mt-5">
         <div className="row justify-content-center">
