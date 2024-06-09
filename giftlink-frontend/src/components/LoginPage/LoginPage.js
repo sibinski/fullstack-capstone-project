@@ -39,7 +39,7 @@ function LoginPage() {
             });
             
                 
-                const json = await res.json();
+                const json = await response.json();
                 console.log('Json',json);
                 if (json.authtoken)  
                 {
