@@ -27,7 +27,7 @@ function LoginPage() {
         e.preventDefault();
         try {
             const response = await fetch(`${urlConfig.backendUrl}/api/auth/login`, {
-                method: POST,
+                method: 'POST',
                 headers: {
                     'content-type': 'application/json',
                     'Authorization': bearerToken ? `Bearer $ {bearerToken}` : '',
