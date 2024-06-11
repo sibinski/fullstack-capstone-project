@@ -41,22 +41,19 @@ router.get('/:id', async (req, res) => {
         // Task 2: use the collection() method to retrieve the gift collection
         
             const collection = db.collection("gifts");
-        
-
-            const id = req.params.id;
 
         // Task 3: Find a specific gift by ID using the collection.fineOne method and store in constant called gift
-        
+
+            const id = req.params.id;
             const gift = await collection.findOne({ id: id });
         
-
         if (!gift) {
             return res.status(404).send('Gift not found');
         }
-
+        
+        // Task 4: Return gifts
         res.json(gift);
     } catch (e) {
-        logger.console.error('Error fetching gift:', e);
         next(e);
     }
 });
