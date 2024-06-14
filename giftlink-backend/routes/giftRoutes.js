@@ -14,7 +14,7 @@ router.get('/', async (req, res, next) => {
 
         // Task 2: use the collection() method to retrieve the gift collection
         
-            const collection = db.collection("gifts");
+            const collection = db.collection('gifts');
         
         // Task 3: Fetch all gifts using the collection.find method. Chain with toArray method to convert to JSON array
         
