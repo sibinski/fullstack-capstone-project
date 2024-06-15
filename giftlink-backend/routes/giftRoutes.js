@@ -1,8 +1,10 @@
 /*jshint esversion: 8 */
-const express = require('express');
-const router = express.Router();
-const connectToDatabase = require("../models/db");
+import { Router } from 'express';
+const router = Router();
+import connectToDatabase from "../models/db";
+import { console } from '../logger';
 const logger = require('../logger');
+const { ObjectId } = require('mongodb');
 
 // Get all gifts
 router.get('/', async (req, res, next) => {
@@ -14,7 +16,7 @@ router.get('/', async (req, res, next) => {
 
         // Task 2: use the collection() method to retrieve the gift collection
         
-            const collection = db.collection('gifts');
+            const collection = db.collection("gifts");
         
         // Task 3: Fetch all gifts using the collection.find method. Chain with toArray method to convert to JSON array
         
@@ -25,7 +27,7 @@ router.get('/', async (req, res, next) => {
         res.json(gifts);
         
     } catch (e) {
-        logger.console.error('Error fetching gifts:', e);
+        logger.error('Error fetching gifts:', e);
         next(e);
     }
 });
@@ -40,12 +42,12 @@ router.get('/:id', async (req, res) => {
 
         // Task 2: use the collection() method to retrieve the gift collection
         
-            const collection = db.collection('gifts');
+            const collection = db.collection("gifts");
 
         // Task 3: Find a specific gift by ID using the collection.fineOne method and store in constant called gift
 
             const id = req.params.id;
-            const gift = await collection.findOne({ id: id });
+            const gift = await collection.findOne({ _id: ObjectId(id) });
         
         if (!gift) {
             return res.status(404).send('Gift not found');
@@ -69,8 +71,9 @@ router.post('/', async (req, res, next) => {
 
         res.status(201).json(gift.ops[0]);
     } catch (e) {
+        logger.error('Error adding gift:', e);
         next(e);
     }
 });
 
-module.exports = router;
+export default router;

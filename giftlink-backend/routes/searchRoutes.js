@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const connectToDatabase = require('../models/db');
+const logger = require('../logger');
 
 // Search for gifts
 router.get('/', async (req, res, next) => {
@@ -29,7 +30,12 @@ router.get('/', async (req, res, next) => {
         }
         if (req.query.age_years) 
         {
-            query.age_years = { $lte: parseInt(req.query.age_years) };
+            const ageYears = parseInt(req.query.age_years);
+            if (!isNaN(ageYears)) {
+                query.age_years = { $lte: ageYears };
+            } else {
+                return res.status(400).json({ error: 'Invalid age_years parameter' });
+            }
         }
 
         // Task 4: Fetch filtered gifts using the find(query) method. Make sure to use await and store the result in the `gifts` constant
@@ -37,6 +43,7 @@ router.get('/', async (req, res, next) => {
         res.json(gifts);
         
     } catch (e) {
+        logger.error('Error fetching gifts:', e);
         next(e);
     }
 });
