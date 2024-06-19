@@ -1,30 +1,22 @@
-import express, { Router } from 'express';
+const express = require('express');
 const app = express();
-import { genSalt, hash as _hash, compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
-import { body, validationResult } from 'express-validator';
-import connectToDatabase from '../models/db';
-const router = Router();
-import { config } from 'dotenv';
-import pino from 'pino';  // Import Pino logger
+const bcryptjs = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const { body, validationResult } = require('express-validator');
+const connectToDatabase = require('../models/db');
+const router = express.Router();
+const dotenv = require('dotenv');
+const pino = require('pino');  // Import Pino logger
+
 
 const logger = pino(); //Create a Pino logger instance
 
-config();
+dotenv.config();
 
 //Step 1 - Task 4: Create JWT secret
 const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET is not defined in environment variables');
-}
 
-router.post('/register', [
-    // Add validation for register route
-    body('email').isEmail().withMessage('Enter a valid email'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-    body('firstName').notEmpty().withMessage('First name is required'),
-    body('lastName').notEmpty().withMessage('Last name is required'),
-], async (req, res) => {
+router.post('/register', async (req, res) => {
     try {
         // Task 1: Connect to `giftsdb` in MongoDB through `connectToDatabase` in `db.js`
         const db = await connectToDatabase();
@@ -39,8 +31,8 @@ router.post('/register', [
             return res.status(400).json({ error: 'Email id already exists' });
         }
 
-        const salt = await genSalt(10);
-        const hash = await _hash(req.body.password, salt);
+        const salt = await bcryptjs.genSalt(10);
+        const hash = await bcryptjs.hash(req.body.password, salt);
         const email = req.body.email;
 
         //Task 4: Save user details in database
@@ -55,12 +47,12 @@ router.post('/register', [
          const payload = {
             user: {
                 id: newUser.insertedId,
-            }
+            },
          };
 
         //Create JWT
 
-        const authtoken = sign(payload, JWT_SECRET);
+        const authtoken = jwt.sign(payload, JWT_SECRET);
         logger.info('User registered successfully');
         res.json({authtoken,email});
     } catch (e) {
@@ -69,18 +61,10 @@ router.post('/register', [
     }
 });
 
-router.post('/login', [
-    // Add validation for login route
-    body('email').isEmail().withMessage('Enter a valid email'),
-    body('password').notEmpty().withMessage('Password is required'),
-], async (req, res) => {
+router.post('/login', async (req, res) => {
     console.log("\n\n Inside login")
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            logger.error('Validation errors in login request', errors.array());
-            return res.status(400).json({ errors: errors.array() });
-        }  
+        
         // Task 1: Connect to `giftsdb` in MongoDB through `connectToDatabase` in `db.js`.
         const db = await connectToDatabase();
         // Task 2: Access MongoDB `users` collection
@@ -89,7 +73,7 @@ router.post('/login', [
         const theUser = await collection.findOne({ email: req.body.email });
         // Task 4: Task 4: Check if the password matches the encrypyted password and send appropriate message on mismatch
         if (theUser) {
-            let result = await compare(req.body.password, theUser.password)
+            let result = await bcryptjs.compare(req.body.password, theUser.password)
             if(!result) {
                 logger.error('Passwords do not match');
                 return res.status(404).json({ error: 'Wrong password' });            
@@ -98,12 +82,12 @@ router.post('/login', [
         const userName = theUser.firstName;
         const userEmail = theUser.email;
         // Task 6: Create JWT authentication if passwords match with user._id as payload
-        const payload = {
+        let payload = {
             user: {
                 id: theUser._id.toString(),
-            }
+            },
         };
-        const authtoken = sign(payload, JWT_SECRET);
+        const authtoken = jwt.sign(payload, JWT_SECRET);
         logger.info('User logged in successfully');
         return res.status(200).json({authtoken, userName, userEmail });
     }
@@ -118,10 +102,7 @@ router.post('/login', [
     }
 });
 
-router.put('/update', [
-    // Add validation for update route
-    body('email').isEmail().withMessage('Enter a valid email'),
-], async (req, res) => {
+router.put('/update', async (req, res) => {
     // Task 2: Validate the input using `validationResult` and return approiate message if there is an error.
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -140,10 +121,6 @@ try {
     const collection = db.collection("users");
     // Task 5: find user credentials in database
     const existingUser = await collection.findOne({ email });
-    if (!existingUser) {
-            logger.error('User not found');
-            return res.status(404).json({ error: 'User not found' });
-        }
     existingUser.updatedAt = new Date();
     // Task 6: update user credentials in database
     const updatedUser = await collection.findOneAndUpdate(
@@ -154,10 +131,10 @@ try {
     // Task 7: create JWT authentication using secret key from .env file
     const payload = {
         user: {
-            id: updatedUser.value._id.toString(),
-        }
+            id: updatedUser._id.toString(),
+        },
     };
-    const authtoken = sign(payload, JWT_SECRET);
+    const authtoken = jwt.sign(payload, JWT_SECRET);
     logger.info('User updated successfully');
     res.json({authtoken});
 } catch (error) {
@@ -167,4 +144,4 @@ try {
 }
 });
 
-export default router;
+module.exports = router;
